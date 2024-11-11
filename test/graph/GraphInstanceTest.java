@@ -87,7 +87,7 @@ public abstract class GraphInstanceTest {
         assertEquals(0, graph.set("a", "c", 3));
         assertTrue(graph.sources("c").containsKey("a") && graph.sources("c").get("a") == 3);
         // Try removing the edge
-        assertEquals(1, graph.set("a", "b", 0));
+        assertEquals(2, graph.set("a", "b", 0));
         assertFalse(graph.sources("b").containsKey("a"));
     }
 

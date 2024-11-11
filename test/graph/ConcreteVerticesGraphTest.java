@@ -28,18 +28,94 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
      * Testing ConcreteVerticesGraph...
      */
     
-    // Testing strategy for ConcreteVerticesGraph.toString()
-    //   TODO
+    // Testing strategy for ConcreteEdgesGraph.toString()
+    //   Empty graph
+    //   Graph with one vertex, no edge
+    //   Graph with two vertex, no edge
+    //   Graph with two vertices, one edge
+    //   Graph with three vertices, two edges
     
     // TODO tests for ConcreteVerticesGraph.toString()
-    
+    @Test
+    public void testConcreteVerticesGraphToString() {
+        Graph<String> graph = emptyInstance();
+        assertEquals("", graph.toString());
+
+        graph.add("a");
+        assertEquals("a -> \n", graph.toString());
+
+        graph.add("b");
+        assertEquals("a -> \nb -> \n", graph.toString());
+
+        graph.set("a", "b", 1);
+        assertEquals("a -> b : 1\nb -> \n", graph.toString());
+
+        graph.add("c");
+        graph.set("b", "c", 2);
+        assertEquals("a -> b : 1\nb -> c : 2\nc -> \n", graph.toString());
+    }
+
+
     /*
      * Testing Vertex...
      */
     
     // Testing strategy for Vertex
-    //   TODO
-    
+    //   Vertex with no edges
+    //   Vertex with one edge
+    //   Vertex with multiple edges
+    @Test
+    public void testVertex() {
+        Vertex vertex = new Vertex("a");
+        assertEquals("a", vertex.getSource());
+
+        vertex.addOutEdge("b", 1);
+        assertTrue(vertex.getOutEdges().containsKey("b"));
+        assertEquals(1, vertex.getOutEdges().get("b").intValue());
+
+        vertex.addOutEdge("c", 2);
+        assertEquals("a -> b : 1\na -> c : 2\n", vertex.toString());
+        assertTrue(vertex.getOutEdges().containsKey("c"));
+        assertEquals(2, vertex.getOutEdges().get("c").intValue());
+    }
+
     // TODO tests for operations of Vertex
-    
+    @Test
+    public void testVertexAddOutEdge() {
+        Vertex vertex = new Vertex("a");
+        vertex.addOutEdge("b", 1);
+        assertTrue(vertex.getOutEdges().containsKey("b"));
+        assertEquals(1, vertex.getOutEdges().get("b").intValue());
+
+        vertex.addOutEdge("c", 2);
+        assertTrue(vertex.getOutEdges().containsKey("c"));
+        assertEquals(2, vertex.getOutEdges().get("c").intValue());
+    }
+
+    @Test
+    public void testVertexRemoveOutEdge() {
+        Vertex vertex = new Vertex("a");
+        vertex.addOutEdge("b", 1);
+        vertex.addOutEdge("c", 2);
+
+        vertex.removeOutEdge("b");
+        assertFalse(vertex.getOutEdges().containsKey("b"));
+        assertTrue(vertex.getOutEdges().containsKey("c"));
+        assertEquals(2, vertex.getOutEdges().get("c").intValue());
+
+        vertex.removeOutEdge("c");
+        assertFalse(vertex.getOutEdges().containsKey("c"));
+    }
+
+    @Test
+    public void testVertexToString() {
+        Vertex vertex = new Vertex("a");
+        assertEquals("a -> \n", vertex.toString());
+
+        vertex.addOutEdge("b", 1);
+        assertEquals("a -> b : 1\n", vertex.toString());
+
+        vertex.addOutEdge("c", 2);
+        assertEquals("a -> b : 1\na -> c : 2\n", vertex.toString());
+    }
 }
