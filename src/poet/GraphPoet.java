@@ -1,12 +1,16 @@
-/* Copyright (c) 2015-2016 MIT 6.005 course staff, all rights reserved.
- * Redistribution of original or derived work requires permission of course staff.
- */
 package poet;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import graph.Graph;
+import graph.ConcreteVerticesGraph; // Choose one of the implementations
 
 /**
  * A graph-based poetry generator.
@@ -50,17 +54,13 @@ import graph.Graph;
  * You MUST use Graph in your rep, but otherwise the implementation of this
  * class is up to you.
  */
+
+
 public class GraphPoet {
     
-    private final Graph<String> graph = Graph.empty();
-    
-    // Abstraction function:
-    //   TODO
-    // Representation invariant:
-    //   TODO
-    // Safety from rep exposure:
-    //   TODO
-    
+    private final Graph<String> graph;
+    private final Map<String, String> lowerCaseWords = new HashMap<>();
+
     /**
      * Create a new poet with the graph from corpus (as described above).
      * 
@@ -68,11 +68,31 @@ public class GraphPoet {
      * @throws IOException if the corpus file cannot be found or read
      */
     public GraphPoet(File corpus) throws IOException {
-        throw new RuntimeException("not implemented");
+        this.graph = new ConcreteVerticesGraph(); // Use the appropriate Graph implementation
+        constructGraph(corpus);
     }
     
-    // TODO checkRep
-    
+    // Construct the graph from the corpus
+    private void constructGraph(File corpus) throws IOException {
+        List<String> lines = Files.readAllLines(Paths.get(corpus.getPath()));
+        for (String line : lines) {
+            String[] words = line.split("\\s+");
+            for (int i = 0; i < words.length; i++) {
+                String word1 = words[i].toLowerCase();
+                lowerCaseWords.put(word1, words[i]); // Store original case
+                
+                // Add words to graph
+                graph.add(word1);
+                
+                if (i < words.length - 1) {
+                    String word2 = words[i + 1].toLowerCase();
+                    graph.add(word2);
+                    graph.set(word1, word2, graph.targets(word1).getOrDefault(word2, 0) + 1);
+                }
+            }
+        }
+    }
+
     /**
      * Generate a poem.
      * 
@@ -80,9 +100,47 @@ public class GraphPoet {
      * @return poem (as described above)
      */
     public String poem(String input) {
-        throw new RuntimeException("not implemented");
+        String[] inputWords = input.split("\\s+");
+        StringBuilder poemBuilder = new StringBuilder();
+
+        for (int i = 0; i < inputWords.length; i++) {
+            String currentWord = inputWords[i];
+
+            // Retain original case
+            poemBuilder.append(currentWord).append(" ");
+
+            // Check for bridge word
+            if (i < inputWords.length - 1) {
+                String nextWord = inputWords[i + 1].toLowerCase();
+                String bridgeWord = findBestBridge(currentWord.toLowerCase(), nextWord);
+                if (bridgeWord != null) {
+                    poemBuilder.append(bridgeWord).append(" ");
+                }
+            }
+        }
+        return poemBuilder.toString().trim();
     }
-    
-    // TODO toString()
-    
+
+    // Find the best bridge word between two words
+    private String findBestBridge(String w1, String w2) {
+        String bestBridge = null;
+        int maxWeight = 0;
+
+        // Get neighbors of the first word
+        Map<String, Integer> targets = graph.targets(w1);
+        for (String intermediate : targets.keySet()) {
+            int weight = targets.get(intermediate) + graph.sources(w2).getOrDefault(intermediate, 0);
+            if (weight > maxWeight) {
+                maxWeight = weight;
+                bestBridge = intermediate;
+            }
+        }
+
+        return bestBridge != null ? lowerCaseWords.get(bestBridge) : null;
+    }
+
+    @Override
+    public String toString() {
+        return "GraphPoet with graph: " + graph.toString();
+    }
 }
